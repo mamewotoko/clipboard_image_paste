@@ -21,8 +21,11 @@ module AttachmentPatch
       # Send unloadable so it will not be unloaded in development
       unloadable
 
-      #~ alias_method_chain :attach_files, :pasted_images
-      alias_method_chain :save_attachments, :pasted_images
+      # alias_method_chain :attach_files, :pasted_images
+      
+      # alias_method_chain :save_attachments, :pasted_images
+      alias_method :save_attachments_without_pasted_images, :save_attachments
+      alias_method :save_attachments, :save_attachments_with_pasted_images
     end
   end
 
@@ -32,7 +35,7 @@ module AttachmentPatch
     # image attachments are identified by key >= 10001, the keys should be numbers
     # 'cause acts_as_attachable is sorting them according to insertion order
     def save_attachments_with_pasted_images(attachments, author=User.current)
-      if attachments && attachments.is_a?(Hash)
+      if attachments
         attachments.each do |key,value|
           next unless key.start_with?('1000')
           value['file'] = PastedImage.new(value.delete('data'), value.delete('name'))
