@@ -22,7 +22,6 @@ module AttachmentPatch
       unloadable
 
       #~ alias_method_chain :attach_files, :pasted_images
-      #alias_method_chain :save_attachments, :pasted_images
       alias_method :save_attachments_without_pasted_images, :save_attachments
       alias_method :save_attachments, :save_attachments_with_pasted_images
     end
@@ -34,7 +33,7 @@ module AttachmentPatch
     # image attachments are identified by key >= 10001, the keys should be numbers
     # 'cause acts_as_attachable is sorting them according to insertion order
     def save_attachments_with_pasted_images(attachments, author=User.current)
-      if attachments && attachments.is_a?(Hash)
+      if attachments
         attachments.each do |key,value|
           next unless key.start_with?('1000')
           value['file'] = PastedImage.new(value.delete('data'), value.delete('name'))
@@ -68,6 +67,10 @@ module AttachmentPatch
 
     def read(*args)
       @raw.read(*args)
+    end
+
+    def eof?
+      @raw.eof?
     end
 
     # remove alpha channel (because PDF export doesn't support PNGs with alpha channel,
